@@ -1,2 +1,2 @@
-# tweet_miner
+# Tweet Miner
 Bachelor's Graduate Project - Tweet Miner
