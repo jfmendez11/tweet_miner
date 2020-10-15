@@ -4,7 +4,7 @@ import time
 import json
 
 
-def mined_object(tweet):
+def mined_tweet(tweet):
   mined = {
     'tweet_id': tweet.id_str,
     'name': tweet.user.name,
@@ -19,8 +19,18 @@ def mined_object(tweet):
   }
   return mined
 
+def mined_user(user):
+  mined = {
+    'user_id': user.id_str,
+    'last_tweet_mined': "",
+    'name': user.name,
+    'screen_mame': user.screen_name,
+    'profile_image_url': user.profile_image_url,
+    'verified': user.verified
+  }
+  return mined
 
-class TweetMiner(object):
+class TwittterMiner(object):
   result_limit = 20
   tweets = []
   api = False
@@ -38,11 +48,10 @@ class TweetMiner(object):
 
   def mine_user_tweets(self, user, max_pages=5):
     data = []
-    tweets = tweepy.Cursor(self.api.user_timeline, screen_name=user, tweet_mode="extended").items(
-      max_pages * self.result_limit)
+    tweets = tweepy.Cursor(self.api.user_timeline, screen_name=user, tweet_mode="extended").items(max_pages * self.result_limit)
     for tweet in tweets:
       if tweet.in_reply_to_status_id == None and not hasattr(tweet, 'retweeted_status'):
-        mined = mined_object(tweet)
+        mined = mined_tweet(tweet)
         data.append(mined)
         self.append_replies(data, user, tweet.id_str)
     return data
@@ -54,9 +63,18 @@ class TweetMiner(object):
         if not hasattr(reply, 'in_reply_to_status_id_str'):
           continue
         if reply.in_reply_to_status_id_str == since_id:
-          reply_mined_object = mined_object(reply)
+          reply_mined_object = mined_tweet(reply)
           data.append(reply_mined_object)
           print("reply of tweet:{}".format(reply.full_text))
       except Exception as e:
         print("Failed while fetching replies {}".format(e))
         break
+  
+  def mine_users(self, screen_names_list):
+    data = []
+    for screen_name in screen_names_list:
+      new_user = self.api.get_user(screen_name=screen_name)
+      data.append(new_user)
+    return data
+  
+  
