@@ -1,2 +1,2 @@
 # Tweet Miner
-Bachelor's Graduate Project - Tweet Miner
+Bachelor's Undergraduate Project - Tweet Miner
