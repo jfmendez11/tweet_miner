@@ -15,7 +15,7 @@ class MongoTwitterClient:
       result = self.db.tweets.create_index([('tweet_id', pymongo.DESCENDING)], unique = True)
       pprint.pprint(result)
     if len(list(self.db.users.index_information())) < 3:
-      result = self.db.users.create_index([('screen_name', pymongo.ASCENDING), ('user_id', pymongo.ASCENDING)], unique = True)
+      result = self.db.users.create_index([('screen_name', pymongo.ASCENDING), ('user_id', pymongo.ASCENDING), ('last_tweet_mined', pymongo.ASCENDING)], unique = True)
       pprint.pprint(result)
   
   def insert_tweet(self, tweet):
@@ -37,3 +37,8 @@ class MongoTwitterClient:
     users_collection = self.db["users"]
     result = users_collection.insert_many(users)
     pprint.pprint(result)
+    
+  def update_last_tweet_mined(self, tweet_id, user_screen_name):
+    user_to_update = { "screen_name": user_screen_name }
+    update_value = { "$set": { "last_tweet_mined": tweet_id } }
+    self.db["users"].update_one(user_to_update, update_value)
