@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from twitter_miner import TwittterMiner
 import pprint
-from pymongo import MongoClient
+from mongo_client import MongoTwitterClient
 
 screen_names = [
   "Uniandes",
@@ -13,7 +13,7 @@ screen_names = [
   "UniandesDerecho",
   "MediUniandes",
   "CPolUniandes",
-  "EconomiaUniandes",
+  "EconomiaUAndes",
   "CiderUniandes",
   "EdCoUniandes",
   "AdmonUniandes",
@@ -22,69 +22,59 @@ screen_names = [
   "CulturaUniandes",
   "CienciasUAndes",
   "CEFAUniandes",
-  "GDIPUniandes",
   "_CONSEFE",
   "IEEEUniandes",
   "CEGOBUniandes",
   "CeuDerecho",
   "ceuniandino",
-  "pzalamea",
-  "uniandesbiblio",
   "cerosetenta",
-  "EdcoUniandes",
-  "rettberg_a",
-  "ljhernandezf",
-  "philipp_hessel",
-  "DanielMejiaL",
-  "Felipe_Acosta1",
   "Rev_Ingenieria",
   "ConectaTE_U",
   "BecadosUniandes",
-  "diegosierrab",
-  "Adcamach",
-  "lucerovgo",
-  "CrawfordAJ",
-  "Parra_Leonardo",
-  "SantiagoVargasN",
   "PosgradosUAndes",
-  "Mafe_Rosales_R",
-  "NatRamBus",
   "AntrUniandes",
-  "oscarunivio",
-  "juandacontreras",
   "CTPUniandes",
   "UniandesCEIM",
   "admision_uandes",
-  "gipuniandes",
-  "sandraborda",
-  "DeportesUniande",
-  "MariUniandes",
-  "CamilaFarfanL",
-  "CamiloMontes",
-  "fabiosanchez_to",
-  "JmChenou",
-  "amoterocleves",
-  "FelipeMontesJ",
-  "SEHernandezR",
-  "mlcepedah",
-  "catmuno",
-  "GarzonGuerrero",
-  "JavierPinedaD",
-  "TrainaVJuli",
-  "mortiz217",
-  "juansgalan"
+  "DeportesUniande"
 ]
 
 def main():
   load_dotenv()
+  # Twitter keys
   twitter_keys = {
     "consumer_key": os.getenv("TWITTER_API_KEY"),
     "consumer_secret": os.getenv("TWITTER_API_SECRET_KEY"),
     "access_token": os.getenv("TWITTER_ACCESS_TOKEN"),
     "access_token_secret": os.getenv("TWITTER_ACCESS_TOKEN_SECRET"),
   }
-
+  
+  # MongoDB parameters
+  host = os.getenv("MONGO_DB_HOST")
+  port = int(os.getenv("MONGO_DB_PORT"))
+  
+  # Initialization
   miner = TwittterMiner(keys_dict=twitter_keys, result_limit=20)
-  data = miner.mine_user_tweets(user="agaviriau", max_pages=10)
-  pprint.pprint(data)
+  mongo_client = MongoTwitterClient(host, port)
+  
+  # Get user info if necessary
+  if mongo_client.should_insert_users():
+    pprint.pprint("Mining users from Twitter")
+    users = miner.mine_users(screen_names)
+    mongo_client.insert_many_users(users)
+  # If not, get user info from DB
+  else:
+    print("else")
+    users = mongo_client.get_users()
+  
+  # Mine the user tweets
+  for user in users:
+    pprint.pprint("Mining from " + user["screen_name"])
+    tweets = miner.mine_user_tweets(user=user["screen_name"], mongo_client=mongo_client)
+    mongo_client.insert_many_tweets(tweets)
+  #data = miner.mine_user_tweets(user="agaviriau", max_pages=10)
+  #pprint.pprint(data)
+  
+if __name__ == '__main__':
+  main()
   

@@ -7,7 +7,7 @@ class MongoTwitterClient:
   port = 0
   client = {}
   db = {}
-  
+  # Class initialization
   def __init__(self, host, port):
     self.client = MongoClient(host, port)
     self.db = self.client["tweet_miner"]
@@ -18,6 +18,7 @@ class MongoTwitterClient:
       result = self.db.users.create_index([('screen_name', pymongo.ASCENDING), ('user_id', pymongo.ASCENDING), ('last_tweet_mined', pymongo.ASCENDING)], unique = True)
       pprint.pprint(result)
   
+  # TWEETS
   def insert_tweet(self, tweet):
     tweets_collection = self.db["tweets"]
     result = tweets_collection.insert_one(tweet)
@@ -27,7 +28,17 @@ class MongoTwitterClient:
     tweets_collection = self.db["tweets"]
     result = tweets_collection.insert_many(tweets)
     pprint.pprint(result)
-    
+  
+  
+  # USERS
+  def get_users(self):
+    users_collection = self.db["users"]
+    return users_collection.find({})
+  
+  def get_user(self, screen_name):
+    users_collection = self.db["users"]
+    return users_collection.find_one({"screen_name": screen_name})
+  
   def insert_user(self, user):
     users_collection = self.db["users"]
     result = users_collection.insert_one(user)
@@ -42,3 +53,7 @@ class MongoTwitterClient:
     user_to_update = { "screen_name": user_screen_name }
     update_value = { "$set": { "last_tweet_mined": tweet_id } }
     self.db["users"].update_one(user_to_update, update_value)
+    
+  def should_insert_users(self):
+    tweets_collection = self.db["users"]
+    return tweets_collection.count_documents({}) == 0
