@@ -54,7 +54,7 @@ def main():
   port = int(os.getenv("MONGO_DB_PORT"))
   
   # Initialization
-  miner = TwittterMiner(keys_dict=twitter_keys, result_limit=20)
+  miner = TwittterMiner(keys_dict=twitter_keys)
   mongo_client = MongoTwitterClient(host, port)
   
   # Get user info if necessary
@@ -64,17 +64,19 @@ def main():
     mongo_client.insert_many_users(users)
   # If not, get user info from DB
   else:
-    print("else")
     users = mongo_client.get_users()
   
   # Mine the user tweets
   for user in users:
     pprint.pprint("Mining from " + user["screen_name"])
-    tweets = miner.mine_user_tweets(user=user["screen_name"], mongo_client=mongo_client)
-    mongo_client.insert_many_tweets(tweets)
-  #data = miner.mine_user_tweets(user="agaviriau", max_pages=10)
-  #pprint.pprint(data)
+    tweets = miner.mine_user_tweets(user=user["screen_name"], mongo_client=mongo_client, since_id=user["last_tweet_mined"])
+    try:
+      # Mine the tweets
+      mongo_client.insert_many_tweets(tweets)
+    except Exception as e:
+      # The user has no tweets
+      print("Could not insert tweets from {}. Exception {}".format(user["screen_name"], e))
+      continue
   
 if __name__ == '__main__':
   main()
-  

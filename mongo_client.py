@@ -13,21 +13,21 @@ class MongoTwitterClient:
     self.db = self.client["tweet_miner"]
     if len(list(self.db.tweets.index_information())) < 2:
       result = self.db.tweets.create_index([('tweet_id', pymongo.DESCENDING)], unique = True)
-      pprint.pprint(result)
+      pprint.pprint("Created tweets collection")
     if len(list(self.db.users.index_information())) < 3:
       result = self.db.users.create_index([('screen_name', pymongo.ASCENDING), ('user_id', pymongo.ASCENDING), ('last_tweet_mined', pymongo.ASCENDING)], unique = True)
-      pprint.pprint(result)
+      pprint.pprint("Created user colleciton")
   
   # TWEETS
   def insert_tweet(self, tweet):
     tweets_collection = self.db["tweets"]
     result = tweets_collection.insert_one(tweet)
-    pprint.pprint(result)
+    pprint.pprint("Successfully mined {} tweets".format(len(result.inserted_ids)))
     
   def insert_many_tweets(self, tweets):
     tweets_collection = self.db["tweets"]
     result = tweets_collection.insert_many(tweets)
-    pprint.pprint(result)
+    pprint.pprint("Successfully mined {} tweets".format(len(result.inserted_ids)))
   
   
   # USERS
@@ -42,12 +42,12 @@ class MongoTwitterClient:
   def insert_user(self, user):
     users_collection = self.db["users"]
     result = users_collection.insert_one(user)
-    pprint.pprint(result)
+    pprint.pprint("Successfully mined {} information".format(user["screen_name"]))
     
   def insert_many_users(self, users):
     users_collection = self.db["users"]
     result = users_collection.insert_many(users)
-    pprint.pprint(result)
+    pprint.pprint("Successfully mined {} users".format(len(result.inserted_ids)))
     
   def update_last_tweet_mined(self, tweet_id, user_screen_name):
     user_to_update = { "screen_name": user_screen_name }
