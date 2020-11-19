@@ -14,7 +14,7 @@ class MongoTwitterClient:
     if len(list(self.db.tweets.index_information())) < 2:
       result = self.db.tweets.create_index([('tweet_id', pymongo.DESCENDING)], unique = True)
       pprint.pprint("Created tweets collection")
-    if len(list(self.db.users.index_information())) < 3:
+    if len(list(self.db.users.index_information())) < 2:
       result = self.db.users.create_index([('screen_name', pymongo.ASCENDING), ('user_id', pymongo.ASCENDING), ('last_tweet_mined', pymongo.ASCENDING)], unique = True)
       pprint.pprint("Created user colleciton")
   
