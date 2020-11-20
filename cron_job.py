@@ -11,7 +11,7 @@ if __name__ == "__main__":
   job()
   
   print("Starting cron job")
-  schedule.every().day.at("19:59").do(job)
+  schedule.every().day.at("00:00").do(job)
   
   while True:
     schedule.run_pending()
