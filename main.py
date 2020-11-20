@@ -55,7 +55,7 @@ def main():
   
   # Initialization
   miner = TwittterMiner(keys_dict=twitter_keys)
-  mongo_client = MongoTwitterClient(host)
+  mongo_client = MongoTwitterClient(host, port)
   
   # Get user info if necessary
   if mongo_client.should_insert_users():
