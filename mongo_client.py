@@ -11,6 +11,7 @@ class MongoTwitterClient:
   def __init__(self, host, port):
     print(host)
     self.client = MongoClient(host)
+    print(self.clients)
     self.db = self.client["tweet_miner"]
     if len(list(self.db.tweets.index_information())) < 2:
       result = self.db.tweets.create_index([('tweet_id', pymongo.DESCENDING)], unique = True)
