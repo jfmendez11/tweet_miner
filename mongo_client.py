@@ -9,6 +9,7 @@ class MongoTwitterClient:
   db = {}
   # Class initialization
   def __init__(self, host, port):
+    print(host)
     self.client = MongoClient(host)
     self.db = self.client["tweet_miner"]
     if len(list(self.db.tweets.index_information())) < 2:
