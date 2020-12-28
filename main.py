@@ -73,6 +73,7 @@ def main():
     try:
       # Mine the tweets
       mongo_client.insert_many_tweets(tweets)
+      mongo_client.tokenize_text()
     except Exception as e:
       # The user has no tweets
       print("Could not insert tweets from {}. Exception {}".format(user["screen_name"], e))

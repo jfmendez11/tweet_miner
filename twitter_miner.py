@@ -8,6 +8,7 @@ def mined_tweet(tweet):
     'screen_name': tweet.user.screen_name,
     'retweet_count': tweet.retweet_count,
     'text': tweet._json["full_text"],
+    'tokenized_text': [],
     'mined_at': datetime.datetime.now(),
     'created_at': tweet.created_at,
     'favorite_count': tweet.favorite_count,

@@ -1,12 +1,14 @@
 import pymongo
 from pymongo import MongoClient
 import pprint
+from tweet_tokenizer import TextCleaner
 
 class MongoTwitterClient:
   host = ""
   port = 0
   client = {}
   db = {}
+  text_cleaner = {}
   # Class initialization
   def __init__(self, host, port):
     print(host)
@@ -18,6 +20,8 @@ class MongoTwitterClient:
     if len(list(self.db.users.index_information())) < 2:
       result = self.db.users.create_index([('screen_name', pymongo.ASCENDING), ('user_id', pymongo.ASCENDING), ('last_tweet_mined', pymongo.ASCENDING)], unique = True)
       pprint.pprint("Created user colleciton")
+    
+    self.text_cleaner = TextCleaner()
   
   # TWEETS
   def insert_tweet(self, tweet):
@@ -30,6 +34,16 @@ class MongoTwitterClient:
     result = tweets_collection.insert_many(tweets)
     pprint.pprint("Successfully mined {} tweets".format(len(result.inserted_ids)))
   
+  def tokenize_text(self):
+    tweets_collection = self.db["tweets"]
+    query = { "tokenized_text": { "$size": 0 } }
+    tweets = tweets_collection.find(query)
+    for tweet in tweets:
+      tweet_to_update = { "tweet_id": tweet['tweet_id'] }
+      tokenized_text = self.text_cleaner.lemmatize(tweet['text'])
+      update_value = { "$set": { "tokenized_text": tokenized_text } }
+      self.db["tweets"].update_one(tweet_to_update, update_value)
+      
   
   # USERS
   def get_users(self):
