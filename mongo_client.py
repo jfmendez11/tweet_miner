@@ -42,7 +42,10 @@ class MongoTwitterClient:
       tweet_to_update = { "tweet_id": tweet['tweet_id'] }
       tokenized_text = self.text_cleaner.lemmatize(tweet['text'])
       update_value = { "$set": { "tokenized_text": tokenized_text } }
-      self.db["tweets"].update_one(tweet_to_update, update_value)
+      if not tokenized_text:
+        self.db["tweets"].delete_one(tweet_to_update)
+      else:
+        self.db["tweets"].update_one(tweet_to_update, update_value)
       
   
   # USERS
