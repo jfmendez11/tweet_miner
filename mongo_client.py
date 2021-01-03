@@ -10,10 +10,10 @@ class MongoTwitterClient:
   db = {}
   text_cleaner = {}
   # Class initialization
-  def __init__(self, host, port):
+  def __init__(self, host, port, isTest = False):
     print(host)
     self.client = MongoClient(host, port)
-    self.db = self.client["tweet_miner"]
+    self.db = self.client["tweet_miner" if not isTest else "tweet_miner_test"]
     if len(list(self.db.tweets.index_information())) < 2:
       result = self.db.tweets.create_index([('tweet_id', pymongo.DESCENDING)], unique = True)
       pprint.pprint("Created tweets collection")

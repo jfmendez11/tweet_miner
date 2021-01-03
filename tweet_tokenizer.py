@@ -5,7 +5,6 @@ from spacy_stanza import StanzaLanguage
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 
-
 class TextCleaner:
   nlp = {}
   
@@ -21,7 +20,7 @@ class TextCleaner:
   
   # Checks if the given character is punctuation or not, excluding Twitter special chaarcters (@, #)
   def is_not_punctuation(self, char):
-    is_punctuation = char not in string.punctuation and not char == "¡" and not char == "¿"
+    is_punctuation = char not in string.punctuation.join(["¡", "¿", "–", "“", "”", "¨", "•", "<", ">", "…"])
     return is_punctuation or char == "@" or char == "#"
   
   # Removes numbers, emojis, punctuation, whitespaces and lowers all characters
@@ -47,6 +46,9 @@ class TextCleaner:
                                         u"\u231a"
                                         u"\ufe0f"  # dingbats
                                         u"\u3030"
+                                        u"\u003E"
+                                        u"\u003C"
+                                        u"\u200b"
                                         "]+", flags=re.UNICODE)
     text_noemoji = regrex_pattern.sub(r'', text_nonum)
     # remove punctuations and convert characters to lower case
@@ -59,7 +61,7 @@ class TextCleaner:
   # Removes stopwords based on nltk spanish stopwords and https://github.com/stopwords-iso/stopwords-es/blob/master/stopwords-es.txt
   def remove_stopwords(self, tweet):
     tokens = self.tokenize_tweet(tweet)
-    return [self.join_hashtag(tokens, i) for i in range(0, len(tokens)) if not tokens[i] in stopwords.words('spanish2') and not tokens[i].startswith("https") and not tokens[i] == "am" and not tokens[i] == "pm"]
+    return [self.join_hashtag(tokens, i) for i in range(0, len(tokens)) if not tokens[i] in stopwords.words('spanish2') and "http" not in tokens[i] and "gt" not in tokens[i] and "lt" not in tokens[i]]
   
   # Case when the hashtag is separated from the text
   def join_hashtag(self, tokens, i):
@@ -72,9 +74,11 @@ class TextCleaner:
   def lemmatize(self, tweet):
     tokens = self.remove_stopwords(tweet)
     for i in range(0, len(tokens)):
-      doc = self.nlp(tokens[i])
-      for token in doc:
-        tokens[i] = token.lemma_
+      if not tokens[i].startswith("#"):
+        doc = self.nlp(tokens[i])
+        for token in doc:
+          if token.lemma_ not in stopwords.words("spanish2"):
+            tokens[i] = token.lemma_
     print(tokens)
     return tokens
   
