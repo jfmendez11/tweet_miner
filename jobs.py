@@ -16,6 +16,6 @@ host = os.getenv("MONGO_DB_HOST")
 port = int(os.getenv("MONGO_DB_PORT"))
 
 # Initialization
-mongo_client = MongoTwitterClient(host, port)
+mongo_client = MongoTwitterClient(host, port, isTest=True)
 ## Job to update database
 mongo_client.tokenize_text()

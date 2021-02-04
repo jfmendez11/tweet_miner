@@ -15,10 +15,10 @@ class MongoTwitterClient:
     self.client = MongoClient(host, port)
     self.db = self.client["tweet_miner" if not isTest else "tweet_miner_test"]
     if len(list(self.db.tweets.index_information())) < 2:
-      result = self.db.tweets.create_index([('tweet_id', pymongo.DESCENDING)], unique = True)
+      result = self.db.tweets.create_index([('tweet_id', pymongo.DESCENDING), ('text', pymongo.TEXT)], unique=True)
       pprint.pprint("Created tweets collection")
     if len(list(self.db.users.index_information())) < 2:
-      result = self.db.users.create_index([('screen_name', pymongo.ASCENDING), ('user_id', pymongo.ASCENDING), ('last_tweet_mined', pymongo.ASCENDING)], unique = True)
+      result = self.db.users.create_index([('screen_name', pymongo.ASCENDING), ('user_id', pymongo.ASCENDING), ('last_tweet_mined', pymongo.ASCENDING)], unique=True)
       pprint.pprint("Created user colleciton")
     
     self.text_cleaner = TextCleaner()
@@ -40,13 +40,21 @@ class MongoTwitterClient:
     tweets = tweets_collection.find(query)
     for tweet in tweets:
       tweet_to_update = { "tweet_id": tweet['tweet_id'] }
-      tokenized_text = self.text_cleaner.lemmatize(tweet['text'])
+      tokenized_text = self.text_cleaner.lemmatize(tweet['text'], tweet['hashtags'])
       update_value = { "$set": { "tokenized_text": tokenized_text } }
       if not tokenized_text:
         self.db["tweets"].delete_one(tweet_to_update)
       else:
         self.db["tweets"].update_one(tweet_to_update, update_value)
-      
+  
+  def delete_tokens(self):
+    tweets_collection = self.db["tweets"]
+    query = {"tokenized_text": {"$gt": []}}
+    tweets = tweets_collection.find(query)
+    for tweet in tweets:
+      tweet_to_update = { "tweet_id": tweet['tweet_id'] }
+      update_value = { "$set": { "tokenized_text": [] } }
+      self.db["tweets"].update_one(tweet_to_update, update_value)
   
   # USERS
   def get_users(self):
